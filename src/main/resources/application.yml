@@ -1,2 +1,26 @@
-{
-    }
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: root
+
+  jpa:
+    database: postgresql
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+
+
+
+
+
+#spring.jpa.database=POSTGRESQL
+#spring.datasource.platform=postgres
+#spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+#spring.datasource.username=postgres
+#spring.datasource.password=root
+#spring.jpa.show-sql=true
+#spring.jpa.generate-ddl=true
+#spring.jpa.hibernate.ddl-auto=create-drop
+#spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
