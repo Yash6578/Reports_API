@@ -3,6 +3,7 @@ package com.ashokit.reports_api.rest;
 import com.ashokit.reports_api.model.SearchRequest;
 import com.ashokit.reports_api.model.SearchResponse;
 import com.ashokit.reports_api.service.ReportsService;
+import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -14,12 +15,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/reports")
+@AllArgsConstructor
 public class ReportsController {
     ReportsService reportsService;
-
-    public ReportsController(ReportsService reportsService) {
-        this.reportsService = reportsService;
-    }
 
     @GetMapping("unique/names")
     ResponseEntity<List<String>> getUniquePlanNames() {
@@ -44,5 +42,15 @@ public class ReportsController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                 .contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(file);
+    }
+
+    @GetMapping("/generate/pdf")
+    ResponseEntity<Resource> exportPdf() {
+        String filename = "Enrolled Users Report.pdf";
+        InputStreamResource file = new InputStreamResource(reportsService.exportPdf());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.parseMediaType(MediaType.APPLICATION_PDF_VALUE)).body(file);
     }
 }

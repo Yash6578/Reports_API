@@ -5,7 +5,9 @@ import com.ashokit.reports_api.model.SearchRequest;
 import com.ashokit.reports_api.model.SearchResponse;
 import com.ashokit.reports_api.repository.EligibilityDetailsRepo;
 import com.ashokit.reports_api.service.ExcelGeneratorService;
+import com.ashokit.reports_api.service.PdfGeneratorService;
 import com.ashokit.reports_api.service.ReportsService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -15,16 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class ReportsServiceImpl implements ReportsService {
     final
     EligibilityDetailsRepo eligibilityDetailsRepo;
     final
     ExcelGeneratorService excelGeneratorService;
-
-    public ReportsServiceImpl(EligibilityDetailsRepo eligibilityDetailsRepo, ExcelGeneratorService excelGeneratorService) {
-        this.eligibilityDetailsRepo = eligibilityDetailsRepo;
-        this.excelGeneratorService = excelGeneratorService;
-    }
+    final
+    PdfGeneratorService pdfGeneratorService;
 
     @Override
     public List<String> getUniquePlanNames() {
@@ -39,19 +39,7 @@ public class ReportsServiceImpl implements ReportsService {
     @Override
     public List<SearchResponse> search(SearchRequest searchRequest) {
 
-        EligibilityDetails queryBuilder = new EligibilityDetails();
-
-        if(searchRequest.getPlanName() != null && !searchRequest.getPlanName().equals(""))
-            queryBuilder.setPlanName(searchRequest.getPlanName());
-
-        if(searchRequest.getPlanStatus() != null && !searchRequest.getPlanStatus().equals(""))
-            queryBuilder.setPlanStatus(searchRequest.getPlanStatus());
-
-        if(searchRequest.getPlanStartDate() != null)
-            queryBuilder.setPlanStartDate(searchRequest.getPlanStartDate());
-
-        if(searchRequest.getPlanEndDate() != null)
-            queryBuilder.setPlanEndDate(searchRequest.getPlanEndDate());
+        EligibilityDetails queryBuilder = getQueryBuilder(searchRequest);
 
         Example<EligibilityDetails> example = Example.of(queryBuilder);
 
@@ -67,8 +55,35 @@ public class ReportsServiceImpl implements ReportsService {
         return responseList;
     }
 
+    EligibilityDetails getQueryBuilder(SearchRequest searchRequest) {
+        EligibilityDetails queryBuilder = new EligibilityDetails();
+
+        if(searchRequest.getPlanName() != null && !searchRequest.getPlanName().equals(""))
+            queryBuilder.setPlanName(searchRequest.getPlanName());
+
+        if(searchRequest.getPlanStatus() != null && !searchRequest.getPlanStatus().equals(""))
+            queryBuilder.setPlanStatus(searchRequest.getPlanStatus());
+
+        if(searchRequest.getPlanStartDate() != null)
+            queryBuilder.setPlanStartDate(searchRequest.getPlanStartDate());
+
+        if(searchRequest.getPlanEndDate() != null)
+            queryBuilder.setPlanEndDate(searchRequest.getPlanEndDate());
+
+        return queryBuilder;
+    }
+
     @Override
     public ByteArrayInputStream exportExcel() {
+        return excelGeneratorService.getExcelReport(dataToExport());
+    }
+
+    @Override
+    public ByteArrayInputStream exportPdf() {
+        return pdfGeneratorService.getPdfReport(dataToExport());
+    }
+
+    List<SearchResponse> dataToExport() {
         List<EligibilityDetails> eligibleList = eligibilityDetailsRepo.findAll();
 
         List<SearchResponse> responseList = new ArrayList<>();
@@ -79,6 +94,6 @@ public class ReportsServiceImpl implements ReportsService {
             responseList.add(searchResponse);
         });
 
-        return excelGeneratorService.getExcelReport(responseList);
+        return responseList;
     }
 }

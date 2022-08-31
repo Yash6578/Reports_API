@@ -11,4 +11,5 @@ public interface ReportsService {
     List<String> getUniquePlanStatuses();
     List<SearchResponse> search(SearchRequest searchRequest);
     ByteArrayInputStream exportExcel();
+    ByteArrayInputStream exportPdf();
 }
