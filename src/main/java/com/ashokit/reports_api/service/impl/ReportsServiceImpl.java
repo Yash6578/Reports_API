@@ -4,11 +4,13 @@ import com.ashokit.reports_api.entity.EligibilityDetails;
 import com.ashokit.reports_api.model.SearchRequest;
 import com.ashokit.reports_api.model.SearchResponse;
 import com.ashokit.reports_api.repository.EligibilityDetailsRepo;
+import com.ashokit.reports_api.service.ExcelGeneratorService;
 import com.ashokit.reports_api.service.ReportsService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +18,12 @@ import java.util.List;
 public class ReportsServiceImpl implements ReportsService {
     final
     EligibilityDetailsRepo eligibilityDetailsRepo;
+    final
+    ExcelGeneratorService excelGeneratorService;
 
-    public ReportsServiceImpl(EligibilityDetailsRepo eligibilityDetailsRepo) {
+    public ReportsServiceImpl(EligibilityDetailsRepo eligibilityDetailsRepo, ExcelGeneratorService excelGeneratorService) {
         this.eligibilityDetailsRepo = eligibilityDetailsRepo;
+        this.excelGeneratorService = excelGeneratorService;
     }
 
     @Override
@@ -60,5 +65,20 @@ public class ReportsServiceImpl implements ReportsService {
         });
 
         return responseList;
+    }
+
+    @Override
+    public ByteArrayInputStream exportExcel() {
+        List<EligibilityDetails> eligibleList = eligibilityDetailsRepo.findAll();
+
+        List<SearchResponse> responseList = new ArrayList<>();
+        SearchResponse searchResponse = new SearchResponse();
+
+        eligibleList.forEach(detail -> {
+            BeanUtils.copyProperties(detail, searchResponse);
+            responseList.add(searchResponse);
+        });
+
+        return excelGeneratorService.getExcelReport(responseList);
     }
 }
