@@ -3,9 +3,7 @@ package com.ashokit.reports_api.service.impl;
 import com.ashokit.reports_api.model.SearchResponse;
 import com.ashokit.reports_api.service.ExcelGeneratorService;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -20,7 +18,15 @@ public class ExcelGeneratorServiceImpl implements ExcelGeneratorService {
             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Enrolled Members Report");
 
-            setHeaders(sheet.createRow(0));
+            sheet.createFreezePane(0,1);
+
+            CellStyle style = workbook.createCellStyle();
+            Font font = workbook.createFont();
+            font.setBold(true);
+            font.setFontHeightInPoints((short) 10);
+            style.setFont(font);
+
+            setHeaders(sheet.createRow(0), style);
             setData(sheet, data);
 
             workbook.write(out);
@@ -46,11 +52,13 @@ public class ExcelGeneratorServiceImpl implements ExcelGeneratorService {
         }
     }
 
-    void setHeaders(Row headerRow) {
+    void setHeaders(Row headerRow, CellStyle style) {
         String[] headers = { "Name", "E-Mail", "Mobile Number", "SSN", "Gender" };
 
-        for(int i = 0;i < headers.length;i++)
-            headerRow.createCell(i).setCellValue(headers[i]);
-
+        for(int i = 0;i < headers.length;i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(style);
+        }
     }
 }
